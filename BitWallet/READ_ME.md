@@ -1,0 +1,71 @@
+# BitWallet
+
+![Bitcoin](https://img.shields.io/badge/Bitcoin-Currency-orange?logo=bitcoin&style=flat-square)
+![C#](https://img.shields.io/badge/C%23-Language-blue?logo=csharp&style=flat-square)
+![Visual Studio](https://img.shields.io/badge/Visual%20Studio-IDE-purple?logo=visualstudio&style=flat-square)
+
+
+BitWallet is a simple command-line interface (CLI) application designed to interact with Bitcoin wallets. It provides users with basic wallet operations, including scanning a wallet, generating a new wallet, and sending Bitcoin. 
+
+## Features
+
+- **Scan a Bitcoin Wallet**: Retrieve information from an existing Bitcoin wallet.
+- **Generate a New Wallet**: Create a brand new Bitcoin wallet with a private and public key.
+- **Send Bitcoin**: Send Bitcoin from one wallet to another with ease.
+
+## Getting Started
+
+### Prerequisites
+
+Before you start using BitWallet, ensure you have the following installed:
+
+- [.NET Framework 4.7.2](https://dotnet.microsoft.com/download/dotnet-framework/net472) or higher
+- [Git](https://git-scm.com/) for version control (optional)
+
+### Installation
+
+1. Clone the **BitWallet** directory only to your local machine:
+
+   ```bash
+   git clone --depth 1 --filter=blob:none --sparse https://github.com/yahyamissaoui/My_Projects.git
+   cd My_Projects
+   git sparse-checkout init --cone
+   git sparse-checkout set BitWallet
+   ```
+2. Navigate to the BitWallet directory:
+   
+   ```bash
+   cd BitWallet
+   ```
+3. Run the installer:
+
+   Locate the `setup.exe` file in the `BitWallet\` directory and run it to install the application on your system,
+   or you can also try to run `BitWallet.application` directly.
+
+
+### Command-Line Interface
+
+BitWallet provides a simple command-line interface. Once the application is running, you can access the following options:
+
+1. **Scan a Wallet**  
+   Use this option to scan an existing Bitcoin wallet by providing the wallet address.
+
+2. **Generate a New Wallet**  
+   This will generate a new Bitcoin wallet with a unique private and public key.
+
+3. **Send Bitcoin**  
+   Send Bitcoin from one wallet to another by specifying the recipient's wallet address, the amount, and other necessary transaction details.
+
+
+
+## Contributing
+
+If you'd like to contribute to this project, feel free to fork the repository and submit a pull request.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+## Contact
+
+For more information, feel free to reach out to [Yahya Missaoui](https://github.com/yahyamissaoui).

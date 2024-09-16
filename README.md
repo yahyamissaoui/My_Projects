@@ -29,7 +29,8 @@ Each project is stored in its own directory, with clear documentation, code stru
 
 | Language   | Project Name       | Description                         |
 |------------|--------------------|-------------------------------------|
-| Python     | `chess_game.py`         | A 2D Chess Game using PyGame Lib        |
+| Python     | `chess_game.py`         | A 2D Chess Game using PyGame Library |
+| C#     | `BitWallet`         | Simple CLI Bitcoin Wallet using NBitcoin Library |
 
 
 This table will be updated as I add more projects.
