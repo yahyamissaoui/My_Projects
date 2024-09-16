@@ -3,7 +3,8 @@
 ![Bitcoin](https://img.shields.io/badge/Bitcoin-Currency-orange?logo=bitcoin&style=flat-square)
 ![C#](https://img.shields.io/badge/C%23-Language-blue?logo=csharp&style=flat-square)
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-IDE-purple?logo=visualstudio&style=flat-square)
-
+![NuGet](https://img.shields.io/nuget/v/NBitcoin?color=blue&logo=nuget&style=flat-square)
+![NBitcoin](https://img.shields.io/badge/NBitcoin-Library-green?style=flat-square&logo=bitcoin)
 
 BitWallet is a simple command-line interface (CLI) application designed to interact with Bitcoin wallets. It provides users with basic wallet operations, including scanning a wallet, generating a new wallet, and sending Bitcoin. 
 
