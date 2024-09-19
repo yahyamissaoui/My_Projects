@@ -67,10 +67,29 @@ def load_images():
 
 def draw_board(window):
     colors = [WHITE, BLACK]
+    font = pygame.font.SysFont('Arial', 24, bold=True)
+    letters = 'abcdefgh'
+    numbers = '12345678'
+
     for row in range(ROWS):
         for col in range(COLS):
             color = colors[(row + col) % 2]
-            pygame.draw.rect(window, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+            x = col * SQUARE_SIZE
+            y = row * SQUARE_SIZE
+            pygame.draw.rect(window, color, (x, y, SQUARE_SIZE, SQUARE_SIZE))
+
+            # Draw rank numbers (1-8) along the left and right edges
+            if col == 0:
+                # Left side numbers
+                number = font.render(numbers[7 - row], True, (0, 0, 0))
+                window.blit(number, (x + 5, y + 5))
+
+            # Draw file letters (a-h) along the top and bottom edges
+            if row == ROWS - 1:
+                # Bottom letters
+                letter = font.render(letters[col], True, (0, 0, 0))
+                window.blit(letter, (x + SQUARE_SIZE - 20, y + SQUARE_SIZE - 25))
+
 
 def draw_pieces(window, board, exclude_piece=None):
     for row in range(ROWS):
@@ -104,7 +123,7 @@ def draw_button(window, rect, text, font, active=False):
         rect.y + (rect.height - button_text.get_height()) // 2
     ))
 
-def draw_instructions(window, font, current_player):
+def draw_instructions(window, font, current_player, best_move_text):
     # Sidebar background
     pygame.draw.rect(window, BACKGROUND_COLOR, (BOARD_WIDTH, 0, INSTRUCTIONS_WIDTH, HEIGHT))
     
@@ -148,6 +167,11 @@ def draw_instructions(window, font, current_player):
 
     # Resign button
     draw_button(window, RESIGN_BUTTON, "Resign", font)
+
+    # Display Best Move
+    if best_move_text:
+        move_text = font.render(best_move_text, True, (0, 0, 0))
+        window.blit(move_text, (BOARD_WIDTH + 20, HEIGHT - 150))
 
 class Piece:
     def __init__(self, color, image, name):
@@ -374,10 +398,20 @@ class Board:
     def create_board(self):
         self.board = [[None for _ in range(COLS)] for _ in range(ROWS)]
         for col in range(COLS):
-            self.board[1][col] = Pawn('b', pieces_images['b_pawn'])
-            self.board[1][col].position = (1, col)
             self.board[6][col] = Pawn('w', pieces_images['w_pawn'])
             self.board[6][col].position = (6, col)
+            self.board[1][col] = Pawn('b', pieces_images['b_pawn'])
+            self.board[1][col].position = (1, col)
+
+        # Place other pieces
+        placement = [
+            ('w_rook', Rook), ('w_knight', Knight), ('w_bishop', Bishop),
+            ('w_queen', Queen), ('w_king', King),
+            ('w_bishop', Bishop), ('w_knight', Knight), ('w_rook', Rook)
+        ]
+        for col, (piece_name, piece_class) in enumerate(placement):
+            self.board[7][col] = piece_class('w', pieces_images[piece_name])
+            self.board[7][col].position = (7, col)
 
         placement = [
             ('b_rook', Rook), ('b_knight', Knight), ('b_bishop', Bishop),
@@ -387,15 +421,6 @@ class Board:
         for col, (piece_name, piece_class) in enumerate(placement):
             self.board[0][col] = piece_class('b', pieces_images[piece_name])
             self.board[0][col].position = (0, col)
-
-        placement = [
-            ('w_rook', Rook), ('w_knight', Knight), ('w_bishop', Bishop),
-            ('w_queen', Queen), ('w_king', King),
-            ('w_bishop', Bishop), ('w_knight', Knight), ('w_rook', Rook)
-        ]
-        for col, (piece_name, piece_class) in enumerate(placement):
-            self.board[7][col] = piece_class('w', pieces_images[piece_name])
-            self.board[7][col].position = (7, col)
 
     def is_empty(self, row, col):
         """Check if a specific square is empty."""
@@ -469,12 +494,13 @@ class Board:
         return False
 
     def find_king(self, color):
+        """Find and return the king piece of the specified color."""
         for row in range(ROWS):
             for col in range(COLS):
                 piece = self.board[row][col]
-                if piece and piece.name.lower() == 'k' and piece.color == color:
-                    return (row, col)
-        return None
+                if piece and isinstance(piece, King) and piece.color == color:
+                    return piece  # Return the actual king piece object
+        return None  # Return None if the king is not found
 
     def square_attacked(self, position, color):
         opponent_color = 'b' if color == 'w' else 'w'
@@ -486,6 +512,66 @@ class Board:
                     if position in potential_moves:
                         return True
         return False
+
+    def get_fen(self):
+        fen_rows = []
+        for row in self.board:
+            fen_row = ''
+            empty_squares = 0
+            for piece in row:
+                if piece is None:
+                    empty_squares += 1
+                else:
+                    if empty_squares > 0:
+                        fen_row += str(empty_squares)
+                        empty_squares = 0
+                    # Map piece names to standard FEN letters
+                    # Ensure uppercase for white and lowercase for black
+                    fen_piece = piece.name.upper() if piece.color == 'w' else piece.name.lower()
+                    fen_row += fen_piece
+            if empty_squares > 0:
+                fen_row += str(empty_squares)
+            fen_rows.append(fen_row)
+        fen = '/'.join(fen_rows)
+        
+        # Active color
+        fen += ' ' + ('w' if current_player == 'w' else 'b')
+        
+        # Castling availability
+        castling = ''
+        # White king
+        white_king = self.find_king('w')
+        if white_king and not white_king.has_moved:
+            row, col = white_king.position
+            # Check rooks
+            rook = self.get_piece(7, 7)
+            if isinstance(rook, Rook) and not rook.has_moved:
+                castling += 'K'
+            rook = self.get_piece(7, 0)
+            if isinstance(rook, Rook) and not rook.has_moved:
+                castling += 'Q'
+        # Black king
+        black_king = self.find_king('b')
+        if black_king and not black_king.has_moved:
+            row, col = black_king.position
+            # Check rooks
+            rook = self.get_piece(0, 7)
+            if isinstance(rook, Rook) and not rook.has_moved:
+                castling += 'k'
+            rook = self.get_piece(0, 0)
+            if isinstance(rook, Rook) and not rook.has_moved:
+                castling += 'q'
+        if castling == '':
+            castling = '-'
+        fen += ' ' + castling
+        
+        # En passant target square (always '-')
+        fen += ' -'
+        
+        # Halfmove clock and fullmove number (set to defaults)
+        fen += ' 0 1'
+        
+        return fen
 
 def game_over_popup(winner):
     font = pygame.font.SysFont('Arial', 64)
@@ -533,11 +619,13 @@ def undo_last_move(board):
     current_player = 'b' if current_player == 'w' else 'w'
 
     return board
+
 def main():
     global current_player, game_over
     run = True
     clock = pygame.time.Clock()
     board = Board()
+    best_move_text = ""
 
     dragging = False
     dragging_piece = None
@@ -563,7 +651,7 @@ def main():
             WINDOW.blit(text_surface, (BOARD_WIDTH // 2 - text_surface.get_width() // 2, 10))
         
         # Draw the instructions sidebar
-        draw_instructions(WINDOW, font, current_player)
+        draw_instructions(WINDOW, font, current_player, best_move_text)
 
         pygame.display.update()
 
@@ -573,16 +661,36 @@ def main():
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                # Handle button clicks for "Best Move" and "Resign"
                 if BEST_MOVE_BUTTON.collidepoint(pos):
                     print("Best Move button clicked")
-                # Placeholder logic for best move
-                # In future: implement logic to suggest a best move for the current player
+                    fen = board.get_fen()
+                    print(f"FEN: {fen}")
+                    try:
+                        response = requests.get('https://lichess.org/api/cloud-eval', params={'fen': fen})
+                        response.raise_for_status()
+                        data = response.json()
+                        if 'pvs' in data and len(data['pvs']) > 0:
+                            best_pv = data['pvs'][0]
+                            best_moves = best_pv['moves']
+                            best_move = best_moves.split(' ')[0]
+                            best_move_text = f"Best move: {best_move}"
+                            print(f"Best move: {best_move}")
+                        else:
+                            best_move_text = "No best move found"
+                            print("No best move found in response:", data)
+                    except requests.exceptions.HTTPError as http_err:
+                        best_move_text = f"HTTP error occurred: {http_err}"
+                        print("HTTP error occurred:", http_err)
+                        print("Response content:", response.content)
+                    except Exception as err:
+                        best_move_text = f"An error occurred: {err}"
+                        print("An error occurred:", err)
                 elif RESIGN_BUTTON.collidepoint(pos):
                     print("Resign button clicked")
                     game_over = True
                     game_over_popup(f"{'White' if current_player == 'b' else 'Black'} wins by resignation!")
                     board = restart_game()
+                    best_move_text = ""
 
 
                 row, col = get_row_col_from_mouse(pos)
@@ -653,6 +761,9 @@ def main():
                             }])
                             board.move_piece(dragging_piece.position, (row, col))
 
+                        # Reset best move text
+                        best_move_text = ""
+
                         # Check for game over conditions
                         opponent_color = 'b' if current_player == 'w' else 'w'
                         opponent_has_moves = False
@@ -691,8 +802,10 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     board = restart_game()
+                    best_move_text = ""
                 elif event.key == pygame.K_u:
                     board = undo_last_move(board)
+                    best_move_text = ""
 
     pygame.quit()
 
