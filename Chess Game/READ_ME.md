@@ -10,7 +10,6 @@ This is a simple 2D chess game developed using the Pygame library, with assets f
 ## Upcoming Features :
 
 - En passant: This special pawn capture rule will be added soon.
-- Pawn promotion: Currently in development and will be included in the next update.
 
 
 ## !! Requirements !! :
