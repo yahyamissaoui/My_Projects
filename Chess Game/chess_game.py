@@ -155,8 +155,8 @@ def draw_instructions(window, font, current_player, best_move_text):
 
         "- Castling: Move the king",
         "  two squares.",
-        "- Pawn Promotion: Will be",
-        "  available soon.",
+        "- Pawn Promotion: is now",
+        "  available.",
     ]
     for i, line in enumerate(instructions):
         instruction_text = font.render(line, True, (0, 0, 0))
