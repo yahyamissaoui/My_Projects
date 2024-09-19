@@ -173,6 +173,80 @@ def draw_instructions(window, font, current_player, best_move_text):
         move_text = font.render(best_move_text, True, (0, 0, 0))
         window.blit(move_text, (BOARD_WIDTH + 20, HEIGHT - 150))
 
+
+def handle_promotion(window, board, position):
+    """Handle pawn promotion by prompting the player to choose a piece."""
+    promotion = True
+    chosen_piece = None
+    clock = pygame.time.Clock()
+    font = pygame.font.SysFont('Arial', 32)
+
+    # Define promotion options
+    options = ['Queen', 'Rook', 'Bishop', 'Knight']
+    option_rects = []
+
+    # Calculate button sizes and positions
+    button_width, button_height = 150, 50
+    spacing = 20
+    total_width = 4 * button_width + 3 * spacing
+    start_x = (WINDOW_WIDTH - total_width) // 2
+    start_y = HEIGHT // 2 - button_height // 2
+
+    for i, option in enumerate(options):
+        rect = pygame.Rect(start_x + i * (button_width + spacing), start_y, button_width, button_height)
+        option_rects.append((option, rect))
+
+    while promotion:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                for option, rect in option_rects:
+                    if rect.collidepoint(mouse_pos):
+                        chosen_piece = option.lower()
+                        promotion = False
+                        break
+
+        # Draw semi-transparent overlay
+        overlay = pygame.Surface((WINDOW_WIDTH, HEIGHT))
+        overlay.set_alpha(180)  # Transparency
+        overlay.fill((50, 50, 50))
+        window.blit(overlay, (0, 0))
+
+        # Draw promotion prompt
+        prompt_text = font.render("Promote Pawn to:", True, (255, 255, 255))
+        window.blit(prompt_text, (WINDOW_WIDTH // 2 - prompt_text.get_width() // 2, start_y - 60))
+
+        # Draw promotion buttons
+        for option, rect in option_rects:
+            pygame.draw.rect(window, BUTTON_COLOR, rect)
+            text = font.render(option, True, (255, 255, 255))
+            window.blit(text, (
+                rect.x + (rect.width - text.get_width()) // 2,
+                rect.y + (rect.height - text.get_height()) // 2
+            ))
+
+        pygame.display.update()
+        clock.tick(30)
+
+    # Replace the pawn with the chosen piece
+    row, col = position
+    piece_images = load_images()  # Ensure images are loaded
+    if chosen_piece == 'queen':
+        board.board[row][col] = Queen(board.board[row][col].color, piece_images[f"{board.board[row][col].color}_queen"])
+    elif chosen_piece == 'rook':
+        board.board[row][col] = Rook(board.board[row][col].color, piece_images[f"{board.board[row][col].color}_rook"])
+    elif chosen_piece == 'bishop':
+        board.board[row][col] = Bishop(board.board[row][col].color, piece_images[f"{board.board[row][col].color}_bishop"])
+    elif chosen_piece == 'knight':
+        board.board[row][col] = Knight(board.board[row][col].color, piece_images[f"{board.board[row][col].color}_knight"])
+
+    board.board[row][col].position = (row, col)
+    board.board[row][col].has_moved = True
+
 class Piece:
     def __init__(self, color, image, name):
         self.color = color
@@ -371,12 +445,36 @@ class King(Piece):
                 moves.append((row, col - 2))
 
         return moves
+    
+    def get_valid_moves(self, position, board):
+        potential_moves = self.get_potential_moves(position, board)
+        valid_moves = []
+        for move in potential_moves:
+            # Simulate the move
+            original_piece = board.get_piece(*move)
+            original_position = self.position
+
+            board.set_piece(move, self)
+            board.set_piece(position, None)
+            self.position = move
+
+            # Check if move leaves the king in check
+            if not board.is_in_check(self.color):
+                valid_moves.append(move)
+
+            # Undo the move
+            board.set_piece(position, self)
+            board.set_piece(move, original_piece)
+            self.position = original_position
+
+        return valid_moves
 
     def can_castle_short(self, board):
         row = self.position[0]
         rook = board.get_piece(row, 7)
         if isinstance(rook, Rook) and not rook.has_moved:
             if board.is_empty(row, 5) and board.is_empty(row, 6):
+                # Ensure squares are not under attack
                 if not board.square_attacked((row, 5), self.color) and not board.square_attacked((row, 6), self.color):
                     return True
         return False
@@ -438,8 +536,13 @@ class Board:
         fr, fc = from_pos
         tr, tc = to_pos
         piece = self.board[fr][fc]
+        captured_piece = self.board[tr][tc]
 
-        # Move the King or other piece
+        logging.debug(f"Moving {piece.name} from ({fr}, {fc}) to ({tr}, {tc})")
+        if captured_piece:
+            logging.debug(f"Captured {captured_piece.name} at ({tr}, {tc})")
+
+        # Move the piece
         self.board[tr][tc] = piece
         self.board[fr][fc] = None
         piece.position = (tr, tc)
@@ -447,16 +550,20 @@ class Board:
 
         # Handle Castling
         if isinstance(piece, King):
-            # Short Castling (Kingside)
             if tc - fc == 2:
-                rook_from = (fr, 7)
-                rook_to = (fr, 5)
-                self.move_rook(rook_from, rook_to)
-            # Long Castling (Queenside)
+                logging.debug("Performing short castling")
+                self.move_rook((fr, 7), (fr, 5))
             elif tc - fc == -2:
-                rook_from = (fr, 0)
-                rook_to = (fr, 3)
-                self.move_rook(rook_from, rook_to)
+                logging.debug("Performing long castling")
+                self.move_rook((fr, 0), (fr, 3))
+
+        # Check for pawn promotion
+        promotion = False
+        if isinstance(piece, Pawn):
+            if (piece.color == 'w' and tr == 0) or (piece.color == 'b' and tr == 7):
+                promotion = True
+
+        return promotion, (tr, tc) if promotion else None
 
     def move_rook(self, from_pos, to_pos):
         fr, fc = from_pos
@@ -479,7 +586,7 @@ class Board:
             piece.position = position
 
     def is_in_check(self, color):
-        king_position = self.find_king(color)
+        king_position = self.find_king_position(color)
         if king_position is None:
             return False
 
@@ -492,14 +599,23 @@ class Board:
                     if king_position in potential_moves:
                         return True
         return False
-
-    def find_king(self, color):
-        """Find and return the king piece of the specified color."""
+    
+    def find_king_position(self, color):
+        """Find and return the king's position of the specified color."""
         for row in range(ROWS):
             for col in range(COLS):
                 piece = self.board[row][col]
                 if piece and isinstance(piece, King) and piece.color == color:
-                    return piece  # Return the actual king piece object
+                    return (row, col)  # Return the position as a tuple
+        return None  # Return None if the king is not found
+
+    def find_king(self, color):
+        """Find and return the king's position of the specified color."""
+        for row in range(ROWS):
+            for col in range(COLS):
+                piece = self.board[row][col]
+                if piece and isinstance(piece, King) and piece.color == color:
+                    return piece  # Return the position as a tuple
         return None  # Return None if the king is not found
 
     def square_attacked(self, position, color):
@@ -750,7 +866,7 @@ def main():
                             ])
 
                             # Perform the castling move
-                            board.move_piece((from_row, from_col), (to_row, to_col))
+                            promotion, promotion_pos = board.move_piece((from_row, from_col), (to_row, to_col))
                         else:
                             # Regular move: append as a list with a single move dictionary
                             move_history.append([{
@@ -759,7 +875,15 @@ def main():
                                 'piece': dragging_piece,
                                 'captured': board.get_piece(row, col)
                             }])
-                            board.move_piece(dragging_piece.position, (row, col))
+                            promotion, promotion_pos = board.move_piece(dragging_piece.position, (row, col))
+
+                        if is_castling:
+                            # Handle castling promotion is not needed
+                            pass
+                        else:
+                            # Check for pawn promotion
+                            if promotion:
+                                handle_promotion(WINDOW, board, promotion_pos)
 
                         # Reset best move text
                         best_move_text = ""
@@ -779,16 +903,12 @@ def main():
                         if not opponent_has_moves:
                             if board.is_in_check(opponent_color):
                                 if current_player == "w":
-
                                     game_over_popup("White")
                                     board = restart_game()
                                 else:
-
                                     game_over_popup("Black")
                                     board = restart_game()
-
                             else:
-
                                 game_over_popup("Draw")
                                 board = restart_game()
 
