@@ -1,4 +1,4 @@
-# BitWallet
+# Bitcoin_wallet
 
 ![Bitcoin](https://img.shields.io/badge/Bitcoin-Currency-orange?logo=bitcoin&style=flat-square)
 ![C#](https://img.shields.io/badge/C%23-Language-blue?logo=csharp&style=flat-square)
@@ -6,7 +6,7 @@
 ![NuGet](https://img.shields.io/nuget/v/NBitcoin?color=blue&logo=nuget&style=flat-square)
 ![NBitcoin](https://img.shields.io/badge/NBitcoin-Library-green?style=flat-square&logo=bitcoin)
 
-BitWallet is a simple command-line interface (CLI) application designed to interact with Bitcoin wallets. It provides users with basic wallet operations, including scanning a wallet, generating a new wallet, and sending Bitcoin. 
+Bitcoin_wallet is a simple command-line interface (CLI) application designed to interact with Bitcoin wallets. It provides users with basic wallet operations, including scanning a wallet, generating a new wallet, and sending Bitcoin. 
 
 ## Features
 
@@ -18,35 +18,34 @@ BitWallet is a simple command-line interface (CLI) application designed to inter
 
 ### Prerequisites
 
-Before you start using BitWallet, ensure you have the following installed:
+Before you start using Bitcoin_wallet, ensure you have the following installed:
 
 - [.NET Framework 4.7.2](https://dotnet.microsoft.com/download/dotnet-framework/net472) or higher
 - [Git](https://git-scm.com/) for version control (optional)
 
 ### Installation
 
-1. Clone the **BitWallet** directory only to your local machine:
+1. Clone the **Bitcoin_wallet** directory only to your local machine:
 
    ```bash
    git clone --depth 1 --filter=blob:none --sparse https://github.com/yahyamissaoui/My_Projects.git
    cd My_Projects
    git sparse-checkout init --cone
-   git sparse-checkout set BitWallet
+   git sparse-checkout set Bitcoin_wallet
    ```
-2. Navigate to the BitWallet directory:
+2. Navigate to the Bitcoin_wallet directory:
    
    ```bash
-   cd BitWallet
+   cd Bitcoin_wallet
    ```
 3. Run the installer:
 
-   Locate the `setup.exe` file in the `BitWallet\` directory and run it to install the application on your system,
-   or you can also try to run `BitWallet.application` directly.
-
+   Go to the App folder and locate the `Bitcoin_wallet.exe` file in the `Bitcoin_wallet\` directory and run it to install the application on your system
+   and test it yourself.
 
 ### Command-Line Interface
 
-BitWallet provides a simple command-line interface. Once the application is running, you can access the following options:
+Bitcoin_wallet provides a simple command-line interface. Once the application is running, you can access the following options:
 
 1. **Scan a Wallet**  
    Use this option to scan an existing Bitcoin wallet by providing the wallet address.
