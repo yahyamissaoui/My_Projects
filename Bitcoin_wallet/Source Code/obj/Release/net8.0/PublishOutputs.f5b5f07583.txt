@@ -1,0 +1,8 @@
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\Bitcoin_wallet.exe
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\Bitcoin_wallet.dll
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\Bitcoin_wallet.deps.json
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\Bitcoin_wallet.runtimeconfig.json
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\Bitcoin_wallet.pdb
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\NBitcoin.dll
+C:\Users\yahya\source\repos\Bitcoin_wallet\Bitcoin_wallet\bin\Release\net8.0\publish\Newtonsoft.Json.dll
